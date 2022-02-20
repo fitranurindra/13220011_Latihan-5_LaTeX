@@ -1,0 +1,413 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\renewcommand\IEEEkeywordsname{Keywords}
+\usepackage{cite}
+\usepackage{float}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithm2e}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+
+%% This declares a command \Comment
+%% The argument will be surrounded by /* ... */
+\SetKwComment{Comment}{/* }{ */}
+
+\RestyleAlgo{ruled}
+
+\SetAlgoProcName{Procedure}{proc}
+
+
+\def\BibTex{{\rm B\kern-.05em{\sc i\kern-0.25em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}
+\kern-.125emX}}
+
+
+% Judul
+\title{Implementasi Algoritma Dijkstra Dalam
+Menemukan Jarak Terdekat Dari Lokasi Pengguna
+Ke Tanaman Yang Di Tuju}
+
+% Penulis
+\author{\IEEEauthorblockN{Fitra Nurindra}
+\IEEEauthorblockA{\textit{School of Electrical Engineering and Informatics}\\
+\textit{Institut Teknologi Bandung}\\
+Bandung, Indonesia\\
+Email: 13220011@std.stei.itb.ac.id}
+}
+
+
+\graphicspath{{./Picts}}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Kebun Raya Purwodadi dengan luas area sekitar 85
+    hektar ternyata kekurangan papan informasi yang menyebabkan
+    pengunjung kerap kali kebingungan dalam mencari lokasi tanaman
+    tertentu. Paper ini bertujuan untuk membuat simulasi
+    dari algoritma yang dapat menentukan jarak terdekat antara
+    pengunjung (pengguna program) dengan lokasi tanaman yang
+    dituju. Algoritma yang digunakan adalah algoritma Dijkstra
+    yang beroperasi secara menyeluruh (\textit{greedy}) untuk menguji
+    seitap persimpangan (\textit{Vertex}) dan jalan (\textit{Edge}) pada Kebun
+    Raya Purwodadi. Berdasarkan hasil simulasi dan pengujian,
+    kompleksitas ruang dari program ini adalah $O(V)$ karena adanya
+    pembentukan array yang berisi $V$ \textit{nodes} untuk mencari \textit{heap}
+    minimum. Sementara, kompleksitas waktu dari algoritma tersebut
+    adalah $O(V^2)$.
+\end{abstract}
+
+\begin{IEEEkeywords}
+    Dijkstra, \textit{Vertex}, \textit{Edge}, Tanaman.
+\end{IEEEkeywords}
+
+\section{Introduction}
+    Studi mengenai penggunaan algoritma Dijkstra dalam mencari
+    jarak terdekat dapat diimplementasikan pada kasus pencarian
+    tanaman pada Kebun Raya Purwodadi seperti yang telah
+    dilakukan oleh Yusuf et al di tahun 2017 \cite{yusuf2017implementasi}. Paper ini bertujuan
+    untuk melakukan simulasi kembali terhadap penelitian
+    yang telah dilakukan dengan bahasa C serta mengevaluasi
+    efisiensinya melalui perhitungan kompleksitas waktu dan ruang
+    dengan analisis Big-$O$.
+    
+    Di Kecamatan Purwodadi, Kabupaten Pasuruan, terdapat
+    salah satu kebun raya di Indonesia yang bernama Kebun
+    Raya Purwodadi yang memiliki luas area hingga $85$ hektar.
+    Kebun raya sebagai fasilitas rekreasi dan penelitian ini ternyata
+    kekurangan papan informasi yang seharusnya disediakan oleh
+    pihak pengelola. Hal ini menyebabkan banyaknya pengunjung
+    yang merasa kebingungan untuk mencari lokasi dari tanaman
+    tertentu. Oleh karena itu, Yusuf et al ($2017$) memutuskan
+    untuk membuat suatu aplikasi dengan memanfaatkan algoritma
+    Dijkstra untuk membantu pengunjung Kebun Raya Purwodadi
+    dalam mencari lokasi tertentu.
+
+    Algoritma Dijkstra digunakan karena algoritma ini dapat
+    beroperasi secara menyeluruh (algoritma \textit{greedy}) terhadap
+    semua alternatif fungsi serta durasi eksekusi yang lebih cepat
+    jika dibandingkan dengan algoritma serupa, yaitu Bellman-
+    Ford. Algoritma ini akan mencari jalur dengan ’biaya’ atau cost 
+    terendah antara dua titik dengan membandingkan semua alternatif yang ada.
+    
+    Pada kasus ini, masing-masing persimpangan di Kebun
+    Raya Purwodadi direpresentasikan sebagai \textit{vertex} dan setiap
+    jalan direpresentasikan sebagai \textit{edge}. Rute terdekat yang didapatkan
+    akan diperoleh dari pembobotan setiap \textit{vertex} dan \textit{edge}
+    berdasarkan jarak antara titik pengguna dengan titik tujuan
+    atau tanaman.
+
+\section{Studi Pustaka}
+
+\subsection{Algoritma Dijkstra}
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:one}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+        \tcc*[h]{the labels are now initialized so that the label of $a$ is
+        $0$ and all other labels are $1$, and $S$ is the empty set}
+
+        \While{$z \notin S$}{
+            $u := $ a vertex not in S with $L(u)$ minimal
+            $S := S \cup {u}$
+
+            \For{all vertices v not in S}{
+                \If{$L(u) + w(u,v) < L(v)$}{
+                    $L(v) := L(u) + w(u,v)$
+                }
+            }
+        }
+        \Return{L(z) = length of a shortest path from a to z}
+        
+    \end{algorithm}
+    Algoritma Dijkstra adalah algoritma yang digunakan untuk
+    menemukan jarak jalur terpendek antara dua \textit{vertice} pada
+    \textit{graph} berbobot dan tidak berarah sederhana \cite{rosen2012discrete}. Berbobot
+    berarti grafik memiliki \textit{edge} dengan suatu ’bobot’ atau harga.
+    Bobot dapat merepresentasikan jarak, waktu, atau apapun
+    yang memodelkan koneksi antara kedua \textit{node}. Tidak berarah
+    memiliki arti bahwa untuk setiap \textit{node} yang terhubung, kita
+    dapat mendekati suatu \textit{node} dari kedua arah. Pendekatan Dijikstra
+    juga memiliki asumsi bahwa bobot pada \textit{edge} memiliki
+    nilai yang tidak negatif. Hal ini karena nilai bobot akan
+    terus dibandingkan dan diambil nilai yang paling kecil. Ada
+    banyak varian pada algoritma ini, namun pada percobaan
+    ini digunakan varian dimana suatu \textit{node} ditetapkan menjadi
+    \textit{source node}. Dari \textit{node} inilah akan dicari jarak terpendek
+    diantara \textit{node} lain. Algoritma ini dicetuskan oleh Edsger
+    Wybe Dijkstra, salah seorang tokoh ternama di bidang \textit{computer
+    science} \cite{dijkstra1959note}. Kompleksitas dari algoritma dijkstra adalah
+    $O(n^2)$, dengan $n$ menyatakan jumlah vertice dari \textit{graph} yang
+    bersangkutan.
+\subsection{Kebun Raya Purwodadi}
+    Kebun Raya Purwodadi adalah kebun penelitian di Kecamatan
+    Purwodadi, Jawa Timur. Ia juga dikenal dengan nama
+    Hortus Ilkim Kering Purwodadi dan didirikan tanggal 30 Januari
+    1941 oleh Dr. L.G.M. Baas Becking. Sebagai cabang dari
+    Kebun Raya Bogor, ia memiliki fungsi mengkoleksi tumbuhan
+    yang hidup di dataran rendah kering. Sebagai Balai Konservasi
+    Tumbuhan di bawah Pusat Konservasi Tumbuhan Kebun Raya,
+    Kedeputian Bidang Ilmu Pengetahuan Hayati LIPI, kebun raya
+    ini memiliki banyak tumbuhan yang dinaunginya. Dengan
+    menggunakan algoritma Dijkstra, diharapkan ia dapat membantu
+    pengunjung mencari tanaman tertentu maupun jarak
+    yang paling optimal.
+\section{Metodologi Penelitian}
+    Peneliti menggunakan beberapa tahap dalam penyusunan
+    paper ini. Pertama, dilakukan pengkajian dan studi literatur
+    dengan membaca referensi paper yang berkaitan dan memilih
+    paper yang dapat menjadi acuan dalam penelitian yang dilakukan,
+    sehingga dari pilihan topik dan tema yang berkaitan
+    secara luas dapat dikecilkan menjadi sebuah paper yang mencakup
+    mayoritas dari topik yang dibahas. Setelah ditemukan
+    beberapa paper, dilakukan perangkuman untuk menentukan
+    paper yang sesuai sekaligus membahas poin-poin penting
+    dari paper yang ingin dicapai. Setelah kedua tahap tersebut
+    dilewati, penentuan paper yang dijadikan prototype penelitian
+    merupakan hal yang mudah dan menjadi titik pencapaian
+    dalam studi literatur dan pemilihan topik dari prototype penelitian
+    yang dilakukan. 
+
+    Setelah itu, tahap selanjutnya yang dilakukan oleh peneliti
+    adalah pembuatan prototype berupa program yang ditulis
+    dalam bahasa C. Pembuatan prototype berupa kode ini dilakukan
+    terus-menerus dengan menggunakan metode trial and
+    error sehingga perlu dilakukan revisi hingga protoype kode
+    yang dibuat dapat mendapatkan output yang optimal dan
+    sesuai dengan spesifikasi yang diharapakan. Tahap terakhir 
+    dari penelitian adalah pemaparan kode yang berhasil dijalankan
+    tersebut ke dalam paper.
+
+    \begin{figure}[H]
+        \centering
+        \scalebox{1.1}{\input{Picts/workflow.pdf_tex}}
+    \end{figure}
+
+
+\section{IMPLEMENTASI DAN PENGUJIAN}
+\subsection{Implementasi Graph pada Array dalam Bahasa C}
+    Program akan dimulai dengan pembacaan file bernama
+    \textit{listtanaman.txt.} File tersebut akan menyimpan informasi mengenai
+    semua nama tanaman yang bersangkutan. Setelah pembacaan
+    tersebut, akan dicari informasi mengenai bobot \textit{graph}
+    yang menghubungkan \textit{node}. Informasi ini disimpan di dalam
+    matriks segitiga bawah kiri didalam file \textit{jarakantarpohon.txt}
+    yang juga dibuka saat program dijalankan. Matriks menggambarkan
+    bobot antara jarak dua \textit{node} tanaman sekali saja karena
+    pemodelan \textit{undirected graph} yang memiliki jarak sama baik
+    dari $a$ ke $b$ maupun $b$ ke $a$. Nilai $-1$ akan menggambarkan
+    bagian \textit{node} yang tidak terhubung sama sekali dalam \textit{graph}
+    dan juga dinyatakan dalam suatu variabel bernama \textit{int max}
+    (Jaraknya sebesar tak hingga). Nilai jarak terpendek akan
+    disimpan dalam \textit{array} tersebut selagi program berjalan.
+\subsection{Implementasi Algoritma Dijkstra dalam Bahasa C}
+    Dalam implementasi algoritma, abstraksi dengan menggunakan
+    pseudocode dapat dibagi menjadi dua buah fungsi dan
+    satu program utama. Fungsi yang digunakan adalah fungsi
+    \textit{printgraph} (Fungsi \textit{Graph}) untuk memunculkan \textit{graph}
+    berukuran $n \times n$ ke layar pengguna. Algoritma dari fungsi tersebut
+    dapat dilihat pada bagian di bawah ini:
+
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:two}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+        
+    \end{algorithm}
+    
+    Fungsi kedua yang digunakan adalah fungsi pencari indeks
+    pada \textit{array} yang akan diproses dengan menggunakan pendekatan
+    algoritma Dijkstra. Abstraksi fungsi yang digunakan
+    dapat dilihat pada bagian berikut ini:
+
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:three}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+        $L(a) := \infty$
+
+        $S := \emptyset$
+
+    \end{algorithm}
+
+    Program utama akan membaca file database tanaman
+    beserta jarak masing-masing tanaman dan akan mencetak
+    daftar tanaman yang berada di Kebun Raya Purwodadi.
+    Kemudian, program akan menerima input salah satu tanaman
+    terdekat dari pengguna sebagai penanda posisi awal pengguna.
+    Setelah itu, program akan kembali menerima input posisi
+    tanaman tujuan dan memproses pencarian rute terdekat dengan
+    algoritma Dijkstra. Rute yang diperlukan akan ditampilkan
+    dalam bentuk list nama tanaman yang harus dilalui pengguna
+    dan menampilkan jarak antara kedua tanaman tersebut.
+    Implementasi algoritma dalam abstraksi tersebut dapat dilihat
+    pada gambar di bawah ini:
+
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:four}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+        
+    \end{algorithm}
+
+    
+    Setelah pembacaan jumlah tanaman dari file, maka diperlukan
+    graph atau jarak antar tanaman yang akan menjadi dasar
+    perhitungan dari pencarian rute terdekat. Proses memasukkan
+    graph dapat dilihat pada algoritma berikut ini:
+
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:five}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+
+        
+    \end{algorithm}
+
+    Setelah data yang dibutuhkan dimasukkan, implementasi
+    dari algoritma Dijkstra untuk pencarian rute terdekat adalah
+    sebagai berikut:
+
+    \begin{algorithm}
+        \caption{Dijkstra's Algorithm}\label{alg:six}
+        \KwResult{Find the shortest path from $a$ to $z$}
+        \ProcSty{procedure}{ \textit{Dijkstra}(\textit{G}: weighted connected simple
+        graph, with all weights positive)}
+
+        \tcc*[h]{\textit{G} has vertices $a = v_0, v_1, ..., v_n = z$ and lengths
+        $w(v_i, v_j)$ where $w(v_i, v_j) = \infty$ if $v_i, v_j$ is not an
+        edge in \textit{G}}
+        
+
+        \For{$i := 1$ to n}{
+            $L(v_i) := \infty$
+        }
+        
+    \end{algorithm}
+    
+\subsection{Implementasi Program dalam Bahasa C}
+    Implementasi program dalam bahasa C dapat dilihat
+    pada repository berikut: \newline\href{https://github.com/ReynaldoAverill/Tugas7PMC}
+    {https://github.com/ReynaldoAverill/Tugas7PMC}
+\subsection{Perhitungan Kompleksitas Waktu}
+    Kompleksitas dari program ini dengan notasi kompleksitas
+    Big $O$ adalah $O(n^2)$. Hal tersebut disebabkan pada \textit{loop}
+    program bagian \textit{for}, terdapat \textit{loop for} lain yang berjumlah
+    dua \textit{loop} (Terletak pada bagian assign kondisi awal dan ketika
+    program menjalankan algoritma Djikstra). Karena hal tersebut,
+    akibatnya adalah kompleksitas waktu akan naik seiring dengan
+    naiknya $n$ program yang dijalankan, namun tidak bersifat
+    linear sehingga kompleksitas waktunya adalah $O(n^2)$. Grafik
+    kompleksitas waktu dapat direpresentasikan pada gambar $1$.
+    
+    \begin{figure}[H]
+        \centering
+        \scalebox{0.42}{\input{Picts/graph.pdf_tex}}
+        \caption{Kompleksitas Waktu Program}
+    \end{figure}
+
+\subsection{Perhitungan Kompleksitas Tempat}
+    Matriks penyimpanan yang digunakan pada program ini
+    memiliki ukuran terbesar $n \times n$, dengan nilai $n$ merepresentasikan
+    banyak tanaman dalam file \textit{listtanaman.txt.} Program
+    akan melalui grafik dan menyimpan nilai bobot antara \textit{node}
+    sebesar matriks di atas, mengakibatkan program dengan kompleksitas
+    $O(n^2)$. Hal ini dapat dilihat pada grafik kompleksitas
+    tempat di gambar $2$.
+
+    \begin{figure}[H]
+        \centering
+        \scalebox{0.42}{\input{Picts/graph.pdf_tex}}
+        \caption{Kompleksitas Tempat Program}
+    \end{figure}
+    
+\section{Kesimpulan}
+    Pada perhitungan Jarak Terdekat dalam suatu lokasi atau ruang
+    dapat diimplementasikan penggunaan Algoritma Djikstra
+    dalam perhitungannya untuk mencapai suatu target pada ruang
+    tersebut dari suatu titik. Terbukti dari penelitian Kebun Raya
+    Purwodadi untuk menentukan Tanaman yang ingin dituju.
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{references.bib}
+
+\end{document}
